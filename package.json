@@ -1,0 +1,32 @@
+{
+  "name": "bikeshed-to-ts",
+  "version": "1.0.5",
+  "description": "Extract a TypeScript declaration file from a bikeshed document.",
+  "main": "src/assembler.js",
+  "repository": "https://github.com/darionco/bikeshed-to-ts.git",
+  "author": "Dario Segura <dario.seco@gmail.com>",
+  "license": "MIT",
+  "bin": {
+    "bikeshed-to-ts": "./src/cli.js"
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "typescript",
+    "webidl",
+    "bikeshed",
+    "types",
+    "typedef",
+    "documentation"
+  ],
+  "dependencies": {
+    "@dekkai/data-source": "^0.2.1",
+    "typescript": "^4.2.2",
+    "webidl2": "^23.13.1",
+    "webidl2ts": "git+https://github.com/darionco/webidl2ts.git",
+    "yargs": "^16.2.0"
+  }
+}
