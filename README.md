@@ -44,6 +44,6 @@ $ yarn global add bikeshed-to-ts
     --in, -i		 Path to a bikeshed file to parse.
     --out, -o		 Path to a TypeScript definitions file to write.
     --forceGlobal, -f	 When present, all declarations will be added to the global context
+    --nominal, -n	 When present, types declarations will be made nominal when possible
     --version, -v	 Print version and exit
-
 ```
