@@ -37,9 +37,53 @@ function addExportKeyword(node) {
     }
 }
 
-function addGlobalNodesToLocalScope(local, global) {
+function addNominalIdentifier(node) {
+    if (!node.members) {
+        node.members = [];
+    }
+
+    const __brand = ts.factory.createPropertyDeclaration(
+        /*decorators*/ undefined,
+        /*modifiers*/ [ts.factory.createToken(ts.SyntaxKind.ReadonlyKeyword)],
+        '__brand',
+        undefined,
+        ts.factory.createStringLiteral(node.name.escapedText, true),
+        undefined
+    );
+
+    const comment =
+        '*\n ' +
+        ' * Nominal type branding.\n ' +
+        ' * https://github.com/microsoft/TypeScript/pull/33038\n ' +
+        ' * @internal\n ';
+    ts.addSyntheticLeadingComment(__brand, ts.SyntaxKind.MultiLineCommentTrivia, comment, true);
+
+    node.members.unshift(__brand);
+}
+
+function processNominalTypes(nodes) {
+    const inherited = new Set();
+    for (const node of nodes) {
+        if (node.heritageClauses) {
+            for (const { types } of node.heritageClauses) {
+                for (const type of types) {
+                    inherited.add(type.expression.escapedText);
+                }
+            }
+        }
+    }
+
+    for (const node of nodes) {
+        if (node.kind === ts.SyntaxKind.InterfaceDeclaration && !inherited.has(node.name.escapedText)) {
+            addNominalIdentifier(node);
+        }
+    }
+}
+
+function assembleNodes(local, global) {
+    const ret = [...local];
     if (global.length) {
-        local.push(ts.factory.createModuleDeclaration(
+        ret.push(ts.factory.createModuleDeclaration(
             /*decorators*/ undefined,
             /*modifiers*/ [ts.factory.createToken(ts.SyntaxKind.DeclareKeyword)],
             ts.factory.createIdentifier('global'),
@@ -47,8 +91,8 @@ function addGlobalNodesToLocalScope(local, global) {
             ts.NodeFlags.GlobalAugmentation
         ));
 
-        if (local.length === 1) {
-            local.push(ts.factory.createExportDeclaration(
+        if (ret.length === 1) {
+            ret.push(ts.factory.createExportDeclaration(
                 null,
                 null,
                 false,
@@ -56,9 +100,10 @@ function addGlobalNodesToLocalScope(local, global) {
             ));
         }
     }
+    return ret;
 }
 
-function assembleBlocks(blocks, forceGlobal) {
+function assembleBlocks(blocks, forceGlobal, safeNominalTypes = false) {
     const globalNodes = [];
     const localNodes = [];
 
@@ -68,29 +113,32 @@ function assembleBlocks(blocks, forceGlobal) {
             addLeadingComments(node, blocks.dfn.get(key));
         }
 
-        addExportKeyword(node);
-
         if (forceGlobal || blocks.exposed.has(key)) {
             globalNodes.push(node);
         } else {
+            addExportKeyword(node);
             localNodes.push(node);
         }
     }
 
-    addGlobalNodesToLocalScope(localNodes, globalNodes);
+    if (safeNominalTypes) {
+        processNominalTypes(localNodes);
+        processNominalTypes(globalNodes);
+    }
 
-    return printTS(localNodes);
+    return assembleNodes(localNodes, globalNodes);
 }
 
-async function assembleFile(filePath, forceGlobal) {
+async function assembleFile(filePath, forceGlobal, safeNominalTypes) {
     const blocks = await parseBikeShedFile(filePath);
-    return assembleBlocks(blocks, forceGlobal);
+    const nodes = assembleBlocks(blocks, forceGlobal, safeNominalTypes);
+    return printTS(nodes);
 }
 
 module.exports = {
     consolidateTypeTS,
     addExportKeyword,
-    addGlobalNodesToLocalScope,
+    assembleNodes,
     assembleBlocks,
     assembleFile,
 };
