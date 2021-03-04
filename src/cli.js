@@ -11,6 +11,7 @@ function printHelp() {
     console.log('    --in, -i\t\t Path to a bikeshed file to parse.');
     console.log('    --out, -o\t\t Path to a TypeScript definitions file to write.');
     console.log('    --forceGlobal, -f\t When present, all declarations will be added to the global context');
+    console.log('    --nominal, -n\t When present, types declarations will be made nominal when possible');
     console.log('    --version, -v\t Print version and exit');
 }
 
@@ -27,7 +28,8 @@ async function main(options) {
     }
 
     const forceGlobal = Boolean(options.forceGlobal);
-    const ts = await assembleFile(options.in, forceGlobal);
+    const safeNominalTypes = Boolean(options.nominal);
+    const ts = await assembleFile(options.in, forceGlobal, safeNominalTypes);
 
     fs.writeFile(options.out, ts, function (err) {
         if (err) return console.log(err);
@@ -42,5 +44,6 @@ const argv = yargs(process.argv)
     .alias('i', 'in')
     .alias('o', 'out')
     .alias('f', 'forceGlobal')
+    .alias('n', 'nominal')
     .argv
 main(argv);
