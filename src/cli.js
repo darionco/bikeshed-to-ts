@@ -34,7 +34,6 @@ async function main(options) {
 
     // try to create the path to the file
     try {
-        console.log(path.dirname(options.out));
         await fs.promises.mkdir(path.dirname(options.out), { recursive: true });
     } catch(e) {
         console.error(e);
