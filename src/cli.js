@@ -2,6 +2,7 @@
 
 const {assembleFile} = require('./assembler.js');
 const fs = require('fs');
+const path = require('path');
 const yargs = require('yargs');
 
 function printHelp() {
@@ -31,10 +32,16 @@ async function main(options) {
     const safeNominalTypes = Boolean(options.nominal);
     const ts = await assembleFile(options.in, forceGlobal, safeNominalTypes);
 
-    fs.writeFile(options.out, ts, function (err) {
-        if (err) return console.log(err);
-        console.log(`Written type definitions to ${options.out}`);
-    });
+    // try to create the path to the file
+    try {
+        console.log(path.dirname(options.out));
+        await fs.promises.mkdir(path.dirname(options.out), { recursive: true });
+    } catch(e) {
+        console.error(e);
+    }
+
+    // let it crash!
+    await fs.promises.writeFile(options.out, ts);
 }
 
 const argv = yargs(process.argv)
