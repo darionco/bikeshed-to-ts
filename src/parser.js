@@ -59,7 +59,7 @@ async function parseBikeShedFile(filePath) {
             for (let i = 0, n = tsNodes.length; i < n; ++i) {
                 const node = tsNodes[i];
                 if (node.name) {
-                    node.__idl = [idlBlock[i]];
+                    node.__idl = idlBlock.filter(idl => (idl.name || idl.target) === node.name.escapedText);
                     if (!tsBlocks.has(node.name.escapedText)) {
                         tsBlocks.set(node.name.escapedText, []);
                     }
