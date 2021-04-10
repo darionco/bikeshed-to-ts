@@ -7,7 +7,7 @@ function consolidateTypeTS(tsBlock) {
     const final = tsBlock[0];
     for (let i = 1, n = tsBlock.length; i < n; ++i) {
         const block = tsBlock[i];
-
+        final.__idl.push(block.__idl);
         if (Array.isArray(block.heritageClauses) && block.heritageClauses.length) {
             if (!Array.isArray(final.heritageClauses)) {
                 final.heritageClauses = block.heritageClauses;
