@@ -61,6 +61,15 @@ function addNominalIdentifier(node) {
     node.members.unshift(__brand);
 }
 
+function isIDLType(block, type) {
+    for (const idl of block) {
+        if (idl.type === type) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function processNominalTypes(nodes) {
     const inherited = new Set();
     for (const node of nodes) {
@@ -74,7 +83,7 @@ function processNominalTypes(nodes) {
     }
 
     for (const node of nodes) {
-        if (node.kind === ts.SyntaxKind.InterfaceDeclaration && !inherited.has(node.name.escapedText)) {
+        if (isIDLType(node.__idl, 'interface') && !inherited.has(node.name.escapedText)) {
             addNominalIdentifier(node);
         }
     }
