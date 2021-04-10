@@ -56,8 +56,10 @@ async function parseBikeShedFile(filePath) {
             }
 
             const tsNodes = convertIDL(idlBlock, {});
-            for (const node of tsNodes) {
+            for (let i = 0, n = tsNodes.length; i < n; ++i) {
+                const node = tsNodes[i];
                 if (node.name) {
+                    node.__idl = idlBlock[i];
                     if (!tsBlocks.has(node.name.escapedText)) {
                         tsBlocks.set(node.name.escapedText, []);
                     }
