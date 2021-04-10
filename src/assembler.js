@@ -70,6 +70,18 @@ function isIDLType(block, type) {
     return false;
 }
 
+function getIDLType(block) {
+    let hasIncludes = false;
+    for (const idl of block) {
+        if (idl.type !== 'includes') {
+            return idl.type;
+        } else {
+            hasIncludes = true;
+        }
+    }
+    return hasIncludes ? 'includes' : null;
+}
+
 function processNominalTypes(nodes) {
     const inherited = new Set();
     for (const node of nodes) {
@@ -112,6 +124,32 @@ function assembleNodes(local, global) {
     return ret;
 }
 
+const kTypeOrdering = new Map([
+    ['typedef', 0],
+    ['enum', 1],
+    ['dictionary', 2],
+    ['interface mixin', 3],
+    ['interface', 4],
+    ['includes', 5],
+]);
+
+function sortNodes(nodes) {
+    return nodes.sort((a, b) => {
+        const aType = getIDLType(a.__idl);
+        const bType = getIDLType(b.__idl);
+
+        const aTypeScore = kTypeOrdering.has(aType) ? kTypeOrdering.get(aType) : kTypeOrdering.size;
+        const bTypeScore = kTypeOrdering.has(bType) ? kTypeOrdering.get(bType) : kTypeOrdering.size;
+
+        if (aTypeScore === bTypeScore) {
+            const aTypeName = a.name.escapedText;
+            const bTypeName = b.name.escapedText;
+            return aTypeName.localeCompare(bTypeName, 'en');
+        }
+        return aTypeScore - bTypeScore;
+    });
+}
+
 function assembleBlocks(blocks, forceGlobal, safeNominalTypes = false) {
     const globalNodes = [];
     const localNodes = [];
@@ -134,6 +172,9 @@ function assembleBlocks(blocks, forceGlobal, safeNominalTypes = false) {
         processNominalTypes(localNodes);
         processNominalTypes(globalNodes);
     }
+
+    sortNodes(localNodes);
+    sortNodes(globalNodes);
 
     return assembleNodes(localNodes, globalNodes);
 }
