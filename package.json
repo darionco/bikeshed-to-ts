@@ -26,7 +26,7 @@
     "@dekkai/data-source": "^0.2.1",
     "typescript": "^4.2.4",
     "webidl2": "^23.13.1",
-    "webidl2ts": "git+https://github.com/darionco/webidl2ts.git",
+    "webidl2ts": "git+https://github.com/darionco/webidl2ts.git#4df7c2c",
     "yargs": "^16.2.0"
   }
 }

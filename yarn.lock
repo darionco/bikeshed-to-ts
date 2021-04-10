@@ -711,9 +711,9 @@ webidl2@^23.13.1:
   resolved "https://registry.npmjs.org/webidl2/-/webidl2-23.13.1.tgz#e95aa32e40b2ef71c0f683ea16ddac9202956d98"
   integrity sha512-u5njf3ZyqPr/4K8D6Cxm3B6MwSgwAdtrzxqHklwKaUdP1aQTmtKN5b65k4wlweJ/pRM6fpKUKYz8RlCJ9tka+w==
 
-"webidl2ts@git+https://github.com/darionco/webidl2ts.git":
+"webidl2ts@git+https://github.com/darionco/webidl2ts.git#4df7c2c":
   version "1.0.4"
-  resolved "git+https://github.com/darionco/webidl2ts.git#5416e377458f9a069ae16ba0248e41e988e1effc"
+  resolved "git+https://github.com/darionco/webidl2ts.git#4df7c2c530d848b1be909eece8df9d901ca08963"
   dependencies:
     jsdom "^16.4.0"
     typescript "^4.2.2"
