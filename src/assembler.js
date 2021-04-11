@@ -195,10 +195,25 @@ function assembleBlocks(blocks, forceGlobal, safeNominalTypes = false) {
     return assembleNodes(localNodes, globalNodes);
 }
 
+function printNodes(nodes) {
+    let result = '';
+    let hasNewLine = false;
+    for (const node of nodes) {
+        const text = printTS([node]);
+        const lines = text.split('\n');
+
+        result += `${lines.length > 1 && !hasNewLine ? '\n' : ''}${printTS([node])}\n${lines.length > 1 ? '\n' : ''}`;
+
+        hasNewLine = lines.length > 1;
+    }
+    return result;
+}
+
 async function assembleFile(filePath, forceGlobal, safeNominalTypes) {
     const blocks = await parseBikeShedFile(filePath);
     const nodes = assembleBlocks(blocks, forceGlobal, safeNominalTypes);
-    return printTS(nodes);
+    
+    return printNodes(nodes);
 }
 
 module.exports = {
