@@ -99,7 +99,7 @@ function processNominalTypes(nodes) {
     }
 
     for (const node of nodes) {
-        if (isIDLType(node.__idl, 'interface') && !inherited.has(node.name.escapedText)) {
+        if (isIDLType(node.__idl, 'interface') && node.name && !inherited.has(node.name.escapedText)) {
             addNominalIdentifier(node);
         }
     }
