@@ -166,6 +166,64 @@ function sortNodes(nodes) {
     });
 }
 
+function findMemberByName(source, name) {
+    for (const member of source.members) {
+        if (member.name && member.name.escapedText === name) {
+            return member;
+        }
+    }
+    return null;
+}
+
+function copyConstantMembers(source, target) {
+    for (const idl of source.__idl) {
+        if (idl.members) {
+            for (const member of idl.members) {
+                if (member.type === 'const') {
+                    const tsMember = findMemberByName(source, member.name);
+                    if (tsMember) {
+                        target.members.push(tsMember);
+                    }
+                }
+            }
+        }
+    }
+}
+
+function makeGlobalDeclaration(node) {
+    const result = [node];
+    if (getIDLType(node.__idl) === 'interface' && !node.type) {
+        const varNode = ts.factory.createVariableDeclaration(node.name.escapedText);
+        varNode.type = ts.factory.createTypeLiteralNode([
+            ts.factory.createPropertySignature(
+                undefined,
+                'prototype',
+                undefined,
+                ts.factory.createTypeReferenceNode(node.name.escapedText)
+            ),
+        ]);
+
+        for (let i = node.members.length - 1; i >= 0; --i) {
+            const member = node.members[i];
+            if (member.kind === ts.SyntaxKind.ConstructSignature) {
+                varNode.type.members.push(member);
+                node.members.splice(i, 1);
+            }
+        }
+
+        copyConstantMembers(node, varNode.type);
+
+        const varDeclaration = ts.factory.createVariableStatement(
+            [ts.createModifier(ts.SyntaxKind.DeclareKeyword)],
+            [varNode]
+        );
+        varDeclaration.__idl = node.__idl;
+
+        result.push(varDeclaration);
+    }
+    return result;
+}
+
 function assembleBlocks(blocks, forceGlobal, safeNominalTypes = false) {
     const globalNodes = [];
     const localNodes = [];
@@ -176,7 +234,9 @@ function assembleBlocks(blocks, forceGlobal, safeNominalTypes = false) {
             addLeadingComments(node, blocks.dfn.get(key));
         }
 
-        if (forceGlobal || blocks.exposed.has(key)) {
+        if (forceGlobal) {
+            globalNodes.push(...makeGlobalDeclaration(node));
+        } else if (blocks.exposed.has(key)) {
             globalNodes.push(node);
         } else {
             addExportKeyword(node);
@@ -192,7 +252,7 @@ function assembleBlocks(blocks, forceGlobal, safeNominalTypes = false) {
     sortNodes(localNodes);
     sortNodes(globalNodes);
 
-    return assembleNodes(localNodes, globalNodes);
+    return forceGlobal ? assembleNodes(globalNodes, []) : assembleNodes(localNodes, globalNodes);
 }
 
 function printNodes(nodes) {
