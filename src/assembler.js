@@ -62,9 +62,11 @@ function addNominalIdentifier(node) {
 }
 
 function isIDLType(block, type) {
-    for (const idl of block) {
-        if (idl.type === type) {
-            return true;
+    if (block) {
+        for (const idl of block) {
+            if (idl.type === type) {
+                return true;
+            }
         }
     }
     return false;
@@ -72,11 +74,13 @@ function isIDLType(block, type) {
 
 function getIDLType(block) {
     let hasIncludes = false;
-    for (const idl of block) {
-        if (idl.type !== 'includes') {
-            return idl.type;
-        } else {
-            hasIncludes = true;
+    if (block) {
+        for (const idl of block) {
+            if (idl.type !== 'includes') {
+                return idl.type;
+            } else {
+                hasIncludes = true;
+            }
         }
     }
     return hasIncludes ? 'includes' : null;
