@@ -137,6 +137,18 @@ const kTypeOrdering = new Map([
     ['includes', 5],
 ]);
 
+function getNodeName(node) {
+    if (node.name) {
+        return node.name.escapedText;
+    }
+
+    if (node.declarationList && node.declarationList.declarations[0] && node.declarationList.declarations[0].name) {
+        return node.declarationList.declarations[0].name.escapedText;
+    }
+
+    return null;
+}
+
 function sortNodes(nodes) {
     return nodes.sort((a, b) => {
         const aType = getIDLType(a.__idl);
@@ -146,8 +158,8 @@ function sortNodes(nodes) {
         const bTypeScore = kTypeOrdering.has(bType) ? kTypeOrdering.get(bType) : kTypeOrdering.size;
 
         if (aTypeScore === bTypeScore) {
-            const aTypeName = a.name.escapedText;
-            const bTypeName = b.name.escapedText;
+            const aTypeName = getNodeName(a);
+            const bTypeName = getNodeName(b);
             return aTypeName.localeCompare(bTypeName, 'en');
         }
         return aTypeScore - bTypeScore;
